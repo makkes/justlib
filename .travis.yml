@@ -1,4 +1,6 @@
 language: go
+install:
+    - go get github.com/alecthomas/gometalinter
 script:
     - gometalinter .
     - go test ./...
