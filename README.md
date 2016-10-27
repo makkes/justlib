@@ -1,6 +1,7 @@
 # Justlib
 
-[![Build Status](https://travis-ci.org/justsocialapps/holmes.svg?branch=master)](https://travis-ci.org/justsocialapps/holmes)
+[![GoDoc](https://godoc.org/github.com/justsocialapps/justlib?status.svg)](https://godoc.org/github.com/justsocialapps/justlib)
+[![Build Status](https://travis-ci.org/justsocialapps/justlib.svg?branch=master)](https://travis-ci.org/justsocialapps/justlib)
 
 [Just Social's](https://just.social) Go standard library extensions.
 
