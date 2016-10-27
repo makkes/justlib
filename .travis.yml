@@ -4,5 +4,6 @@ install:
     - go get github.com/kisielk/errcheck
     - go get github.com/justsocialapps/assert
 script:
+    - gometalinter --install
     - gometalinter .
     - go test ./...
