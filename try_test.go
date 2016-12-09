@@ -25,7 +25,6 @@ func TestTryZeroTimesShouldCallFunctionIndefinitelyAndEventuallyReturn(t *testin
 	cnt := 0
 	rand.Seed(time.Now().UnixNano())
 	successAfterNTries := rand.Intn(100000)
-	t.Log(successAfterNTries)
 	err := Try(0, 0, func() error {
 		cnt++
 		if cnt == successAfterNTries {
