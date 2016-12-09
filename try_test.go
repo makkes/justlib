@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/justsocialapps/assert"
 )
@@ -18,13 +20,21 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestTryZeroTimesShouldNotCallFunctionAtAllAndReturnNil(t *testing.T) {
+func TestTryZeroTimesShouldCallFunctionIndefinitelyAndEventuallyReturn(t *testing.T) {
 	a := assert.NewAssert(t)
+	cnt := 0
+	rand.Seed(time.Now().UnixNano())
+	successAfterNTries := rand.Intn(100000)
+	t.Log(successAfterNTries)
 	err := Try(0, 0, func() error {
-		t.Fatal("f has been called")
-		return nil
+		cnt++
+		if cnt == successAfterNTries {
+			return nil
+		}
+		return errors.New("Some error")
 	})
 	a.Equal(err, nil, "Try returned with an error")
+	a.Equal(cnt, successAfterNTries, "The callback wasn't called enough times")
 }
 
 func TestTryTwoTimesShouldCallPassingFunctionOnlyOnce(t *testing.T) {
