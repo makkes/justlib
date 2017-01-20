@@ -2,10 +2,7 @@
 // programming more pleasant.
 package justlib
 
-import (
-	"log"
-	"time"
-)
+import "time"
 
 // Try calls the given function »f« at most »times« times as long as it returns
 // an error, sleeping the given »backoffTime« in between subsequent calls.  If
@@ -22,7 +19,6 @@ func Try(times uint16, backoffTime time.Duration, f func() error) error {
 		if times > 0 && i >= times {
 			return err
 		}
-		log.Printf("Error at try %d: %v. Trying again in %v. %d tries left", i, err, backoffTime, times-i)
 		time.Sleep(backoffTime)
 	}
 }
