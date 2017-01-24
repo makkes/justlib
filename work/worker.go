@@ -10,13 +10,19 @@ type Payload struct {
 	Data interface{}
 }
 
+// Result wraps the result of the worker function for each input.
+type Result struct {
+	Input  interface{}
+	Output interface{}
+}
+
 // Worker represents a worker unit that distributes jobs between its working
 // Goroutines.
 type Worker struct {
 	workerCount int
-	workerFunc  func(Payload)
+	workerFunc  func(Payload) interface{}
 	dispatcher  chan Payload  // channel for dispatching jobs to the worker
-	completions chan struct{} // channel with one entry per completed job
+	completions chan Result   // channel with one entry per completed job
 	quit        chan struct{} // channel used to signal the workers to exit
 	inProgress  int
 	shutdown    bool
@@ -24,9 +30,12 @@ type Worker struct {
 
 // NewWorker creates a new worker that maintains exactly workerCount
 // Goroutines. Each Goroutine calls workerFunc for processing the given data.
-func NewWorker(workerCount int, workerFunc func(Payload)) *Worker {
+// If strictCompletions is true, then the result of every job is sent to the
+// completions channel blockingly; else it is sent there non-blockingly which
+// might result in in the loss of the result.
+func NewWorker(workerCount int, workerFunc func(Payload) interface{}, strictCompletions bool) *Worker {
 	dispatcher := make(chan Payload)
-	completions := make(chan struct{})
+	completions := make(chan Result)
 	quit := make(chan struct{})
 
 	// spawn worker goroutines
@@ -35,10 +44,17 @@ func NewWorker(workerCount int, workerFunc func(Payload)) *Worker {
 			for {
 				select {
 				case job := <-dispatcher:
-					workerFunc(job)
-					select {
-					case completions <- struct{}{}:
-					default:
+					output := workerFunc(job)
+					if strictCompletions {
+						completions <- Result{
+							Input:  job.Data,
+							Output: output,
+						}
+					} else {
+						select {
+						case completions <- Result{Input: job.Data, Output: output}:
+						default:
+						}
 					}
 				case <-quit:
 					return
@@ -65,7 +81,7 @@ func NewWorker(workerCount int, workerFunc func(Payload)) *Worker {
 // is completed. This lets you keep track of completed jobs. Be aware that you
 // need to start reading from this channel before dispatching jobs to the
 // Worker, otherwise you would not receive all completions.
-func (w *Worker) Completions() <-chan struct{} {
+func (w *Worker) Completions() <-chan Result {
 	return w.completions
 }
 
