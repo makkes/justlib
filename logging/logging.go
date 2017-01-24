@@ -2,9 +2,11 @@
 package logging
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 // Logger ist the interface that is implemented by all logging implementations.
@@ -28,11 +30,21 @@ const (
 	ERROR
 )
 
-var levelNames = []string{
-	"DEBUG",
-	"INFO",
-	"WARN",
-	"ERROR",
+var levelNames = map[Level]string{
+	DEBUG: "DEBUG",
+	INFO:  "INFO",
+	WARN:  "WARN",
+	ERROR: "ERROR",
+}
+
+func LevelFromString(s string) (*Level, error) {
+	s = strings.ToUpper(s)
+	for k, v := range levelNames {
+		if v == s {
+			return &k, nil
+		}
+	}
+	return nil, errors.New("No such level name exists.")
 }
 
 func (l Level) String() string {
