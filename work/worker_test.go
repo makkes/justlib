@@ -24,7 +24,7 @@ func Example() {
 	}
 
 	// this call makes sure that the worker stops all goroutines as soon as
-	// they have process all remaining jobs.
+	// they have processed all remaining jobs.
 	worker.Quit()
 
 }

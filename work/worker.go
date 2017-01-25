@@ -23,7 +23,7 @@ type Worker struct {
 	workerFunc  func(Payload) interface{}
 	dispatcher  chan Payload  // channel for dispatching jobs to the worker
 	completions chan Result   // channel with one entry per completed job
-	quit        chan struct{} // channel used to signal the workers to exit
+	quit        chan struct{} // channel used by Quit to signal the workers to exit
 	inProgress  int
 	shutdown    bool
 }
@@ -45,18 +45,23 @@ func NewWorker(workerCount int, workerFunc func(Payload) interface{}, strictComp
 				select {
 				case job := <-dispatcher:
 					output := workerFunc(job)
+					// write the result blockingly
 					if strictCompletions {
 						completions <- Result{
 							Input:  job.Data,
 							Output: output,
 						}
 					} else {
+						// write the result non-blockingly,
+						// probably losing it when the
+						// channel is full.
 						select {
 						case completions <- Result{Input: job.Data, Output: output}:
 						default:
 						}
 					}
 				case <-quit:
+					// Quit was called
 					return
 				}
 			}
