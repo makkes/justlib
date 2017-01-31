@@ -112,6 +112,9 @@ func (w *Worker) Dispatch(job Payload) error {
 // the completions channel returned by Complete and only call Quit after you
 // have received all results.
 func (w *Worker) Quit() {
+	if w.shutdown {
+		return
+	}
 	for i := 0; i < w.workerCount; i++ {
 		w.quit <- struct{}{}
 	}
