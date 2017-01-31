@@ -102,10 +102,15 @@ func (w *Worker) Dispatch(job Payload) error {
 
 // Quit waits for all workers to complete their jobs and returns afterwards.
 // After this function returns, all worker routines are stopped and you cannot
-// use this worker, anymore.
+// use this worker, anymore. Be aware that the job queue filled with Dispatch
+// is not drained when you call Quit so that jobs might get lost. If you want
+// to make sure that all jobs that are dispatched are also completed, read from
+// the completions channel returned by Complete and only call Quit after you
+// have received all results.
 func (w *Worker) Quit() {
 	for i := 0; i < w.workerCount; i++ {
 		w.quit <- struct{}{}
 	}
 	w.shutdown = true
+	close(w.completions) // signal to consumers that we're done so they don't block
 }
