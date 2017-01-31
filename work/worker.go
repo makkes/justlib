@@ -30,9 +30,12 @@ type Worker struct {
 
 // NewWorker creates a new worker that maintains exactly workerCount
 // Goroutines. Each Goroutine calls workerFunc for processing the given data.
+//
 // If strictCompletions is true, then the result of every job is sent to the
 // completions channel blockingly; else it is sent there non-blockingly which
-// might result in in the loss of the result.
+// might result in in the loss of the result. You must read from the channel
+// returned by Completions when you set strictCompletions to true, otherwise
+// you'll have a deadlock.
 func NewWorker(workerCount int, workerFunc func(Payload) interface{}, strictCompletions bool) *Worker {
 	dispatcher := make(chan Payload)
 	completions := make(chan Result)
@@ -61,7 +64,8 @@ func NewWorker(workerCount int, workerFunc func(Payload) interface{}, strictComp
 						}
 					}
 				case <-quit:
-					// Quit was called
+					// Quit was called, so we stop
+					// processing jobs and exit.
 					return
 				}
 			}
