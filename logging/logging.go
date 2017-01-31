@@ -37,6 +37,8 @@ var levelNames = map[Level]string{
 	ERROR: "ERROR",
 }
 
+// LevelFromString parses a string and returns the approriate Level with the
+// same name. If no such Level exists, a non-nil error is returned.
 func LevelFromString(s string) (*Level, error) {
 	s = strings.ToUpper(s)
 	for k, v := range levelNames {

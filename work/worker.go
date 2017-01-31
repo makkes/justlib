@@ -95,7 +95,8 @@ func (w *Worker) Completions() <-chan Result {
 }
 
 // Dispatch feeds a new job to the Worker. If no idle Goroutine is available,
-// this function blocks until the job can be processed.
+// this function blocks until the job can be processed. If the worker has
+// already been shut down with Quit, an error is returned.
 func (w *Worker) Dispatch(job Payload) error {
 	if w.shutdown {
 		return errors.New("WORKER IS SHUT DOWN")

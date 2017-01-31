@@ -23,7 +23,10 @@ func Example() {
 	// create 100 jobs and dispatch them to the worker.
 	for i := 0; i < 100; i++ {
 		// this call will block when all 3 goroutines are currently busy.
-		worker.Dispatch(work.Payload{Data: strconv.Itoa(i)})
+		err := worker.Dispatch(work.Payload{Data: strconv.Itoa(i)})
+		if err != nil {
+			// react accordingly
+		}
 	}
 
 	// this call makes sure that the worker stops all goroutines as soon as
@@ -66,7 +69,9 @@ func TestQuitShouldAscertainThatAllJobsHaveCompleted(t *testing.T) {
 	}, false)
 
 	for i := 0; i < 100; i++ {
-		worker.Dispatch(work.Payload{Data: strconv.Itoa(i)})
+		err := worker.Dispatch(work.Payload{Data: strconv.Itoa(i)})
+		if err != nil {
+		}
 	}
 
 	worker.Quit()
@@ -90,7 +95,9 @@ func TestWorkerShouldWorkSequentiallyWithOnlyOneGoroutine(t *testing.T) {
 	}()
 
 	for i := 0; i < 100; i++ {
-		worker.Dispatch(work.Payload{Data: strconv.Itoa(i)})
+		err := worker.Dispatch(work.Payload{Data: strconv.Itoa(i)})
+		if err != nil {
+		}
 	}
 
 	worker.Quit()

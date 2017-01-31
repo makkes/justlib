@@ -5,5 +5,5 @@ install:
     - go get github.com/justsocialapps/assert
 script:
     - gometalinter --install
-    - gometalinter .
+    - gometalinter ./...
     - go test ./...
