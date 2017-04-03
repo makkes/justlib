@@ -53,7 +53,7 @@ func TestTryTwoTimesShouldCallFailingFunctionTwoTimes(t *testing.T) {
 	err := Try(2, 0, func() error {
 		called++
 		if called == 1 {
-			return errors.New("Warning. Warp reactor core primary coolant failure.")
+			return errors.New("Warning. Warp reactor core primary coolant failure")
 		}
 		return nil
 	})
