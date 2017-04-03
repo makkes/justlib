@@ -110,7 +110,7 @@ func (w *Worker) Dispatch(job Payload) error {
 // use this worker, anymore. Be aware that the job queue filled with Dispatch
 // is not drained when you call Quit so that jobs might get lost. If you want
 // to make sure that all jobs that are dispatched are also completed, read from
-// the completions channel returned by Complete and only call Quit after you
+// the completions channel returned by Completions and only call Quit after you
 // have received all results.
 func (w *Worker) Quit() {
 	if w.shutdown {
