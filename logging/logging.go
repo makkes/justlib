@@ -15,6 +15,14 @@ type Logger interface {
 	SetLevel(level Level)
 	// Log logs a message in the given log level.
 	Log(level Level, format string, v ...interface{})
+	// Debug logs a message with DEBUG level.
+	Debug(format string, v ...interface{})
+	// Info logs a message with INFO level.
+	Info(format string, v ...interface{})
+	// Warn logs a message with WARN level.
+	Warn(format string, v ...interface{})
+	// Error logs a message with ERROR level.
+	Error(format string, v ...interface{})
 	// Fatal logs the given arguments and exits the program.
 	Fatal(v ...interface{})
 }
@@ -46,7 +54,7 @@ func LevelFromString(s string) (*Level, error) {
 			return &k, nil
 		}
 	}
-	return nil, errors.New("No such level name exists.")
+	return nil, errors.New("No such level name exists")
 }
 
 func (l Level) String() string {
@@ -54,14 +62,36 @@ func (l Level) String() string {
 }
 
 type stdoutLogger struct {
-	level Level
+	level  Level
+	prefix string
+}
+
+func (l *stdoutLogger) Debug(format string, v ...interface{}) {
+	l.Log(DEBUG, format, v...)
+}
+
+func (l *stdoutLogger) Info(format string, v ...interface{}) {
+	l.Log(INFO, format, v...)
+}
+
+func (l *stdoutLogger) Warn(format string, v ...interface{}) {
+	l.Log(WARN, format, v...)
+}
+
+func (l *stdoutLogger) Error(format string, v ...interface{}) {
+	l.Log(ERROR, format, v...)
 }
 
 func (l *stdoutLogger) Log(level Level, format string, v ...interface{}) {
 	if l.level > level {
 		return
 	}
-	prolog := fmt.Sprintf("[%s] ", level.String())
+	var prolog string
+	if len(l.prefix) > 0 {
+		prolog = fmt.Sprintf("[%s] [%s] ", level.String(), l.prefix)
+	} else {
+		prolog = fmt.Sprintf("[%s] ", level.String())
+	}
 	msg := fmt.Sprintf(format, v...)
 	log.Print(prolog, msg)
 }
@@ -79,7 +109,13 @@ func (l *stdoutLogger) SetLevel(level Level) {
 
 // NewLogger creates and returns a new default Logger.
 func NewLogger() Logger {
-	return &stdoutLogger{DEBUG}
+	return &stdoutLogger{DEBUG, ""}
+}
+
+// NewPrefixedLogger creates and returns a new default Logger that prefixes
+// each log entry with the given string.
+func NewPrefixedLogger(prefix string) Logger {
+	return &stdoutLogger{DEBUG, prefix}
 }
 
 var defaultLogger = NewLogger()
