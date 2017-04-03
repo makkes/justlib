@@ -25,7 +25,7 @@ func Example() {
 		// this call will block when all 3 goroutines are currently busy.
 		err := worker.Dispatch(work.Payload{Data: strconv.Itoa(i)})
 		if err != nil {
-			// react accordingly
+			return // the worker has already been shut down
 		}
 	}
 
@@ -71,6 +71,8 @@ func TestQuitShouldAscertainThatAllJobsHaveCompleted(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		err := worker.Dispatch(work.Payload{Data: strconv.Itoa(i)})
 		if err != nil {
+			t.Fail()
+			return
 		}
 	}
 
@@ -97,6 +99,8 @@ func TestWorkerShouldWorkSequentiallyWithOnlyOneGoroutine(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		err := worker.Dispatch(work.Payload{Data: strconv.Itoa(i)})
 		if err != nil {
+			t.Fail()
+			return
 		}
 	}
 
