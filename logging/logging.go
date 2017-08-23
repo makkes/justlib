@@ -2,30 +2,12 @@
 package logging
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"strings"
 )
-
-// Logger ist the interface that is implemented by all logging implementations.
-type Logger interface {
-	// SetLevel sets the log level for this logger instance.
-	SetLevel(level Level)
-	// Log logs a message in the given log level.
-	Log(level Level, format string, v ...interface{})
-	// Debug logs a message with DEBUG level.
-	Debug(format string, v ...interface{})
-	// Info logs a message with INFO level.
-	Info(format string, v ...interface{})
-	// Warn logs a message with WARN level.
-	Warn(format string, v ...interface{})
-	// Error logs a message with ERROR level.
-	Error(format string, v ...interface{})
-	// Fatal logs the given arguments and exits the program.
-	Fatal(v ...interface{})
-}
 
 // Level defines all available log levels.
 type Level uint8
@@ -67,70 +49,76 @@ type stdoutLogger struct {
 }
 
 func (l *stdoutLogger) Debug(format string, v ...interface{}) {
-	l.Log(DEBUG, format, v...)
+	l.log(DEBUG, format, v...)
 }
 
 func (l *stdoutLogger) Info(format string, v ...interface{}) {
-	l.Log(INFO, format, v...)
+	l.log(INFO, format, v...)
 }
 
 func (l *stdoutLogger) Warn(format string, v ...interface{}) {
-	l.Log(WARN, format, v...)
+	l.log(WARN, format, v...)
 }
 
 func (l *stdoutLogger) Error(format string, v ...interface{}) {
-	l.Log(ERROR, format, v...)
+	l.log(ERROR, format, v...)
 }
 
-func (l *stdoutLogger) Log(level Level, format string, v ...interface{}) {
+func (l *stdoutLogger) Fatal(format string, v ...interface{}) {
+	log.Fatalf("[%s] %s", ERROR.String(), fmt.Sprintf(format, v...))
+}
+
+func (l *stdoutLogger) log(level Level, format string, v ...interface{}) {
 	if l.level > level {
 		return
 	}
-	var prolog string
+	var prolog bytes.Buffer
 	if len(l.prefix) > 0 {
-		prolog = fmt.Sprintf("[%s] [%s] ", level.String(), l.prefix)
+		fmt.Fprintf(&prolog, "[%s] [%s] ", level.String(), l.prefix)
 	} else {
-		prolog = fmt.Sprintf("[%s] ", level.String())
+		fmt.Fprintf(&prolog, "[%s] ", level.String())
 	}
-	msg := fmt.Sprintf(format, v...)
-	log.Print(prolog, msg)
-}
-
-func (l *stdoutLogger) Fatal(v ...interface{}) {
-	prolog := fmt.Sprintf("[%s] ", ERROR.String())
-	msg := fmt.Sprint(v...)
-	log.Print(prolog, msg)
-	os.Exit(1)
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	fmt.Fprintf(&prolog, format, v...)
+	err := log.Output(4, prolog.String())
+	if err != nil {
+		Fatal("Could not output log message: %s", err)
+	}
 }
 
 func (l *stdoutLogger) SetLevel(level Level) {
 	l.level = level
 }
 
-// NewLogger creates and returns a new default Logger.
-func NewLogger() Logger {
-	return &stdoutLogger{DEBUG, ""}
-}
-
-// NewPrefixedLogger creates and returns a new default Logger that prefixes
-// each log entry with the given string.
-func NewPrefixedLogger(prefix string) Logger {
-	return &stdoutLogger{DEBUG, prefix}
-}
-
-var defaultLogger = NewLogger()
+var defaultLogger = &stdoutLogger{DEBUG, ""}
 
 // SetLevel sets the logging level of the default logger.
 func SetLevel(level Level) {
 	defaultLogger.SetLevel(level)
 }
 
-// Log logs the given message via the default logger.
-func Log(level Level, format string, v ...interface{}) {
-	defaultLogger.Log(level, format, v...)
+// Debug logs the given message with DEBUG level.
+func Debug(format string, v ...interface{}) {
+	defaultLogger.Debug(format, v...)
 }
 
-// Fatal logs the given message via the default logger.
-func Fatal(v ...interface{}) {
-	defaultLogger.Fatal(v...)
+// Info logs the given message with INFO level.
+func Info(format string, v ...interface{}) {
+	defaultLogger.Info(format, v...)
+}
+
+// Warn logs the given message with WARN level.
+func Warn(format string, v ...interface{}) {
+	defaultLogger.Warn(format, v...)
+}
+
+// Error logs the given message with ERROR level.
+func Error(format string, v ...interface{}) {
+	defaultLogger.Error(format, v...)
+}
+
+// Fatal logs the given message with ERROR level and exits (same as
+// log.Fatal).
+func Fatal(format string, v ...interface{}) {
+	defaultLogger.Fatal(format, v...)
 }

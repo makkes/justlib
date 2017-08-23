@@ -29,57 +29,42 @@ func TestLevelFromStringShouldReturnNilWithEmptyString(t *testing.T) {
 	a.Nil(l, "Level is not nil")
 }
 
-func TestDefaultPrefixedLoggerShouldWritePrefixCorrectly(t *testing.T) {
-	a := assert.NewAssert(t)
-	buf := new(bytes.Buffer)
-	log.SetOutput(buf)
-	logger := NewPrefixedLogger("pre")
-
-	logger.Debug("did that")
-
-	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[DEBUG\\] \\[pre\\] did that\n$", buf.String(), "Unexpected log output")
-}
-
 func TestDefaultDebugShouldLogWithDebugLevel(t *testing.T) {
 	a := assert.NewAssert(t)
 	buf := new(bytes.Buffer)
 	log.SetOutput(buf)
-	logger := NewLogger()
 
-	logger.Debug("did that")
+	Debug("did that")
 
-	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[DEBUG\\] did that\n$", buf.String(), "Unexpected log output")
+	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d logging_test\\.go:\\d+: \\[DEBUG\\] did that\n$", buf.String(), "Unexpected log output")
 }
 
 func TestDefaultInfoShouldLogWithInfoLevel(t *testing.T) {
 	a := assert.NewAssert(t)
 	buf := new(bytes.Buffer)
 	log.SetOutput(buf)
-	logger := NewLogger()
 
-	logger.Info("did it")
+	Info("did it")
 
-	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[INFO\\] did it\n$", buf.String(), "Unexpected log output")
+	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d logging_test\\.go:\\d+: \\[INFO\\] did it\n$", buf.String(), "Unexpected log output")
 }
 
 func TestDefaultWarnShouldLogWithWarnLevel(t *testing.T) {
 	a := assert.NewAssert(t)
 	buf := new(bytes.Buffer)
 	log.SetOutput(buf)
-	logger := NewLogger()
 
-	logger.Warn("warning")
+	Warn("warning")
 
-	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[WARN\\] warning\n$", buf.String(), "Unexpected log output")
+	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d logging_test\\.go:\\d+: \\[WARN\\] warning\n$", buf.String(), "Unexpected log output")
 }
 
 func TestDefaultErrorShouldLogWithErrorLevel(t *testing.T) {
 	a := assert.NewAssert(t)
 	buf := new(bytes.Buffer)
 	log.SetOutput(buf)
-	logger := NewLogger()
 
-	logger.Error("erroaarrr!!")
+	Error("erroaarrr!!")
 
-	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[ERROR\\] erroaarrr!!\n$", buf.String(), "Unexpected log output")
+	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d logging_test\\.go:\\d+: \\[ERROR\\] erroaarrr!!\n$", buf.String(), "Unexpected log output")
 }
