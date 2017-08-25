@@ -30,6 +30,20 @@ type Worker struct {
 	shutdown            bool                      // if true, the worker has been shut down and cannot be used, anymore
 }
 
+// jobcounter keeps track of the number of jobs that are currently running. It
+// is started for every new worker.
+func jobCounter(jobCountChan chan int, jobCountRequestChan chan chan int) {
+	runningJobCount := 0
+	for {
+		select {
+		case incr := <-jobCountChan:
+			runningJobCount += incr
+		case respChan := <-jobCountRequestChan:
+			respChan <- runningJobCount
+		}
+	}
+}
+
 // NewWorker creates a new worker that maintains exactly workerCount
 // Goroutines. Each Goroutine calls workerFunc for processing the given data.
 //
@@ -55,19 +69,7 @@ func NewWorker(workerCount int, workerFunc func(Payload) interface{}, strictComp
 		false,
 	}
 
-	// this routine keeps track of the number of jobs that are currently
-	// running.
-	go func() {
-		runningJobCount := 0
-		for {
-			select {
-			case incr := <-jobCountChan:
-				runningJobCount += incr
-			case respChan := <-jobCountRequestChan:
-				respChan <- runningJobCount
-			}
-		}
-	}()
+	go jobCounter()
 
 	// spawn worker goroutines
 	for i := 0; i < workerCount; i++ {
