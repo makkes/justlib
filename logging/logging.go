@@ -78,7 +78,6 @@ func (l *stdoutLogger) log(level Level, format string, v ...interface{}) {
 	} else {
 		fmt.Fprintf(&prolog, "[%s] ", level.String())
 	}
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	fmt.Fprintf(&prolog, format, v...)
 	err := log.Output(4, prolog.String())
 	if err != nil {
