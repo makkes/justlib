@@ -99,7 +99,10 @@ func TestJobCountShouldReturnCorrectValue(t *testing.T) {
 
 	// iteratively start jobs and check job count
 	for i := 0; i < workers; i++ {
-		worker.Dispatch(work.Payload{})
+		err := worker.Dispatch(work.Payload{})
+		if err != nil {
+			t.Fail()
+		}
 		<-startCh
 		assert.NewAssert(t).Equal(worker.JobCount(), i+1, "Job count is wrong")
 	}
