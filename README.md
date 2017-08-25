@@ -5,11 +5,21 @@ contains utility functions that we need in our day-to-day Go programming work.
 
 ## Installation
 
-``go get github.com/justsocialapps/justlib``
+### Stable branch
+
+```sh
+go get gopkg.in/justsocialapps/justlib.v1
+```
+
+### Development branch
+
+```sh
+go get github.com/justsocialapps/justlib
+```
 
 ## Documentation
 
-See the [GoDoc](https://godoc.org/github.com/justsocialapps/justlib) for
+See the [GoDoc](https://godoc.org/gopkg.in/justsocialapps/justlib.v1) for
 reference documentation.
 
 ## License
