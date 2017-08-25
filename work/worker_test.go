@@ -81,6 +81,37 @@ func TestQuitShouldAscertainThatAllJobsHaveCompleted(t *testing.T) {
 	assert.NewAssert(t).Equal(len(resCh), 100, "Not all jobs were completed")
 }
 
+func TestJobCountShouldReturnZeroWithNoJobsDispatched(t *testing.T) {
+	worker := work.NewWorker(99, func(p work.Payload) interface{} { return nil }, false)
+	assert.NewAssert(t).Equal(worker.JobCount(), 0, "Job count is wrong")
+}
+
+func TestJobCountShouldReturnCorrectValue(t *testing.T) {
+	startCh := make(chan struct{})
+	quitCh := make(chan struct{})
+	workers := 5
+	// start a worker with max 5 concurrently running jobs
+	worker := work.NewWorker(workers, func(p work.Payload) interface{} {
+		startCh <- struct{}{}
+		<-quitCh
+		return nil
+	}, true)
+
+	// iteratively start jobs and check job count
+	for i := 0; i < workers; i++ {
+		worker.Dispatch(work.Payload{})
+		<-startCh
+		assert.NewAssert(t).Equal(worker.JobCount(), i+1, "Job count is wrong")
+	}
+
+	// iteratively stop jobs and check job count
+	for i := workers; i > 0; i-- {
+		quitCh <- struct{}{}
+		<-worker.Completions()
+		assert.NewAssert(t).Equal(worker.JobCount(), i-1, "Job count is wrong")
+	}
+}
+
 func TestWorkerShouldWorkSequentiallyWithOnlyOneGoroutine(t *testing.T) {
 
 	resultCh := make(chan string)
