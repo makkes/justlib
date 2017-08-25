@@ -3,7 +3,9 @@
 // Goroutines and distribute work among them.
 package work
 
-import "errors"
+import (
+	"errors"
+)
 
 // Payload wraps the data that represents a job to be processed.
 type Payload struct {
@@ -19,13 +21,13 @@ type Result struct {
 // Worker represents a worker unit that distributes jobs between its working
 // Goroutines.
 type Worker struct {
-	workerCount int
-	workerFunc  func(Payload) interface{}
-	dispatcher  chan Payload  // channel for dispatching jobs to the worker
-	completions chan Result   // channel with one entry per completed job
-	quit        chan struct{} // channel used by Quit to signal the workers to exit
-	inProgress  int
-	shutdown    bool
+	workerCount         int                       // the maximum number of concurrently running jobs
+	workerFunc          func(Payload) interface{} // the function that does all the work
+	dispatcher          chan Payload              // channel for dispatching jobs to the worker
+	completions         chan Result               // channel with one entry per completed job
+	quit                chan struct{}             // channel used by Quit to signal the workers to exit
+	jobCountRequestChan chan chan int             // a channel to request the value of inProgress
+	shutdown            bool                      // if true, the worker has been shut down and cannot be used, anymore
 }
 
 // NewWorker creates a new worker that maintains exactly workerCount
@@ -40,6 +42,32 @@ func NewWorker(workerCount int, workerFunc func(Payload) interface{}, strictComp
 	dispatcher := make(chan Payload)
 	completions := make(chan Result)
 	quit := make(chan struct{})
+	jobCountChan := make(chan int)
+	jobCountRequestChan := make(chan chan int)
+
+	worker := &Worker{
+		workerCount,
+		workerFunc,
+		dispatcher,
+		completions,
+		quit,
+		jobCountRequestChan,
+		false,
+	}
+
+	// this routine keeps track of the number of jobs that are currently
+	// running.
+	go func() {
+		runningJobCount := 0
+		for {
+			select {
+			case incr := <-jobCountChan:
+				runningJobCount += incr
+			case respChan := <-jobCountRequestChan:
+				respChan <- runningJobCount
+			}
+		}
+	}()
 
 	// spawn worker goroutines
 	for i := 0; i < workerCount; i++ {
@@ -47,7 +75,9 @@ func NewWorker(workerCount int, workerFunc func(Payload) interface{}, strictComp
 			for {
 				select {
 				case job := <-dispatcher:
+					jobCountChan <- 1
 					output := workerFunc(job)
+					jobCountChan <- -1
 					// write the result blockingly
 					if strictCompletions {
 						completions <- Result{
@@ -72,16 +102,6 @@ func NewWorker(workerCount int, workerFunc func(Payload) interface{}, strictComp
 		}()
 	}
 
-	worker := &Worker{
-		workerCount,
-		workerFunc,
-		dispatcher,
-		completions,
-		quit,
-		0,
-		false,
-	}
-
 	return worker
 
 }
@@ -92,6 +112,14 @@ func NewWorker(workerCount int, workerFunc func(Payload) interface{}, strictComp
 // Worker, otherwise you would not receive all completions.
 func (w *Worker) Completions() <-chan Result {
 	return w.completions
+}
+
+// JobCount returns the number of jobs that are running concurrently at the
+// moment.
+func (w *Worker) JobCount() int {
+	resp := make(chan int)
+	w.jobCountRequestChan <- resp
+	return <-resp
 }
 
 // Dispatch feeds a new job to the Worker. If no idle Goroutine is available,
