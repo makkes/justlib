@@ -69,7 +69,7 @@ func NewWorker(workerCount int, workerFunc func(Payload) interface{}, strictComp
 		false,
 	}
 
-	go jobCounter()
+	go jobCounter(jobCountChan, jobCountRequestChan)
 
 	// spawn worker goroutines
 	for i := 0; i < workerCount; i++ {
