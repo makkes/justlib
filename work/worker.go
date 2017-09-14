@@ -38,7 +38,11 @@ func jobCounter(jobCountChan chan int, jobCountRequestChan chan chan int) {
 		select {
 		case incr := <-jobCountChan:
 			runningJobCount += incr
-		case respChan := <-jobCountRequestChan:
+		case respChan, ok := <-jobCountRequestChan:
+			if !ok {
+				// channel has been closed by Quit
+				return
+			}
 			respChan <- runningJobCount
 		}
 	}
@@ -152,4 +156,5 @@ func (w *Worker) Quit() {
 	}
 	w.shutdown = true
 	close(w.completions) // signal to consumers that we're done so they don't block
+	close(w.jobCountRequestChan)
 }
