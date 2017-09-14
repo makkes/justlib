@@ -111,7 +111,8 @@ func NewWorker(workerCount int, workerFunc func(Payload) interface{}, strictComp
 // Completions returns a channel that is sent a value to every time when a job
 // is completed. This lets you keep track of completed jobs. Be aware that you
 // need to start reading from this channel before dispatching jobs to the
-// Worker, otherwise you would not receive all completions.
+// Worker, otherwise you would not receive all completions. The returned
+// channel is closed when you call Quit on the Worker.
 func (w *Worker) Completions() <-chan Result {
 	return w.completions
 }
