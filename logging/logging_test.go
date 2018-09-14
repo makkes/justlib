@@ -36,7 +36,7 @@ func TestDefaultDebugShouldLogWithDebugLevel(t *testing.T) {
 
 	Debug("did that")
 
-	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[DEBUG\\] did that\n$", buf.String(), "Unexpected log output")
+	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[DEBUG\\] \\[.*\\.go:\\d*\\] did that\n$", buf.String(), "Unexpected log output")
 }
 
 func TestDefaultInfoShouldLogWithInfoLevel(t *testing.T) {
@@ -46,7 +46,7 @@ func TestDefaultInfoShouldLogWithInfoLevel(t *testing.T) {
 
 	Info("did it")
 
-	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[INFO\\] did it\n$", buf.String(), "Unexpected log output")
+	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[INFO\\] \\[.*\\.go:\\d*\\] did it\n$", buf.String(), "Unexpected log output")
 }
 
 func TestDefaultWarnShouldLogWithWarnLevel(t *testing.T) {
@@ -56,7 +56,7 @@ func TestDefaultWarnShouldLogWithWarnLevel(t *testing.T) {
 
 	Warn("warning")
 
-	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[WARN\\] warning\n$", buf.String(), "Unexpected log output")
+	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[WARN\\] \\[.*\\.go:\\d*\\] warning\n$", buf.String(), "Unexpected log output")
 }
 
 func TestDefaultErrorShouldLogWithErrorLevel(t *testing.T) {
@@ -66,5 +66,5 @@ func TestDefaultErrorShouldLogWithErrorLevel(t *testing.T) {
 
 	Error("erroaarrr!!")
 
-	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[ERROR\\] erroaarrr!!\n$", buf.String(), "Unexpected log output")
+	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[ERROR\\] \\[.*\\.go:\\d*\\] erroaarrr!!\n$", buf.String(), "Unexpected log output")
 }

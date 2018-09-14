@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"runtime"
 	"strings"
 )
 
@@ -78,6 +79,9 @@ func (l *stdoutLogger) log(level Level, format string, v ...interface{}) {
 	} else {
 		fmt.Fprintf(&prolog, "[%s] ", level.String())
 	}
+	_, file, line, _ := runtime.Caller(3)
+	fileParts := strings.Split(file, "/")
+	fmt.Fprintf(&prolog, "[%s:%d] ", fileParts[len(fileParts)-1], line)
 	fmt.Fprintf(&prolog, format, v...)
 	err := log.Output(4, prolog.String())
 	if err != nil {
