@@ -36,7 +36,18 @@ func TestDefaultDebugShouldLogWithDebugLevel(t *testing.T) {
 
 	Debug("did that")
 
-	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[DEBUG\\] \\[.*\\.go:\\d*\\] did that\n$", buf.String(), "Unexpected log output")
+	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[DEBUG\\] \\[logging_test.go:\\d*\\] did that\n$", buf.String(), "Unexpected log output")
+}
+
+func TestLoggerDebugShouldLogWithDebugLevel(t *testing.T) {
+	a := assert.NewAssert(t)
+	buf := new(bytes.Buffer)
+	logger := NewLogger(DEBUG, "")
+	log.SetOutput(buf)
+
+	logger.Debug("did that")
+
+	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[DEBUG\\] \\[logging_test.go:\\d*\\] did that\n$", buf.String(), "Unexpected log output")
 }
 
 func TestDefaultInfoShouldLogWithInfoLevel(t *testing.T) {
@@ -46,7 +57,18 @@ func TestDefaultInfoShouldLogWithInfoLevel(t *testing.T) {
 
 	Info("did it")
 
-	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[INFO\\] \\[.*\\.go:\\d*\\] did it\n$", buf.String(), "Unexpected log output")
+	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[INFO\\] \\[logging_test.go:\\d*\\] did it\n$", buf.String(), "Unexpected log output")
+}
+
+func TestLoggerWarnShouldLogWithWarnLevel(t *testing.T) {
+	a := assert.NewAssert(t)
+	buf := new(bytes.Buffer)
+	logger := NewLogger(WARN, "")
+	log.SetOutput(buf)
+
+	logger.Warn("warning")
+
+	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[WARN\\] \\[logging_test.go:\\d*\\] warning\n$", buf.String(), "Unexpected log output")
 }
 
 func TestDefaultWarnShouldLogWithWarnLevel(t *testing.T) {
@@ -56,7 +78,18 @@ func TestDefaultWarnShouldLogWithWarnLevel(t *testing.T) {
 
 	Warn("warning")
 
-	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[WARN\\] \\[.*\\.go:\\d*\\] warning\n$", buf.String(), "Unexpected log output")
+	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[WARN\\] \\[logging_test.go:\\d*\\] warning\n$", buf.String(), "Unexpected log output")
+}
+
+func TestLoggerErrorShouldLogWithErrorLevel(t *testing.T) {
+	a := assert.NewAssert(t)
+	buf := new(bytes.Buffer)
+	logger := NewLogger(ERROR, "")
+	log.SetOutput(buf)
+
+	logger.Error("erroaarrr!!")
+
+	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[ERROR\\] \\[logging_test\\.go:\\d*\\] erroaarrr!!\n$", buf.String(), "Unexpected log output")
 }
 
 func TestDefaultErrorShouldLogWithErrorLevel(t *testing.T) {
@@ -66,5 +99,38 @@ func TestDefaultErrorShouldLogWithErrorLevel(t *testing.T) {
 
 	Error("erroaarrr!!")
 
-	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[ERROR\\] \\[.*\\.go:\\d*\\] erroaarrr!!\n$", buf.String(), "Unexpected log output")
+	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[ERROR\\] \\[logging_test\\.go:\\d*\\] erroaarrr!!\n$", buf.String(), "Unexpected log output")
+}
+
+func TestDefaultSetLevelShouldSetLevel(t *testing.T) {
+	a := assert.NewAssert(t)
+	buf := new(bytes.Buffer)
+	log.SetOutput(buf)
+
+	SetLevel(ERROR)
+	Warn("Warp reactor core primary coolant failure")
+
+	a.Match("", buf.String(), "Unexpected log output")
+}
+
+func TestNewLogger(t *testing.T) {
+	a := assert.NewAssert(t)
+	buf := new(bytes.Buffer)
+	log.SetOutput(buf)
+
+	logger := NewLogger(DEBUG, "PREFIX")
+	logger.Info("What a nice day, innit?")
+
+	a.Match("^\\d\\d\\d\\d\\/\\d\\d\\/\\d\\d \\d\\d:\\d\\d:\\d\\d \\[INFO\\] \\[PREFIX\\] \\[logging_test\\.go:\\d*\\] What a nice day, innit\\?\n$", buf.String(), "Unexpected log output")
+}
+
+func TestNewLoggerWithLevelShouldSuppressLowerLevelLogs(t *testing.T) {
+	a := assert.NewAssert(t)
+	buf := new(bytes.Buffer)
+	log.SetOutput(buf)
+
+	logger := NewLogger(ERROR, "PREFIX")
+	logger.Info("What a nice day, innit?")
+
+	a.Match("", buf.String(), "Unexpected log output")
 }

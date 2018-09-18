@@ -44,6 +44,14 @@ func (l Level) String() string {
 	return levelNames[l]
 }
 
+type Logger interface {
+	Debug(format string, v ...interface{})
+	Info(format string, v ...interface{})
+	Warn(format string, v ...interface{})
+	Error(format string, v ...interface{})
+	Fatal(format string, v ...interface{})
+}
+
 type stdoutLogger struct {
 	level  Level
 	prefix string
@@ -79,7 +87,7 @@ func (l *stdoutLogger) log(level Level, format string, v ...interface{}) {
 	} else {
 		fmt.Fprintf(&prolog, "[%s] ", level.String())
 	}
-	_, file, line, _ := runtime.Caller(3)
+	_, file, line, _ := runtime.Caller(2)
 	fileParts := strings.Split(file, "/")
 	fmt.Fprintf(&prolog, "[%s:%d] ", fileParts[len(fileParts)-1], line)
 	fmt.Fprintf(&prolog, format, v...)
@@ -95,6 +103,10 @@ func (l *stdoutLogger) SetLevel(level Level) {
 
 var defaultLogger = &stdoutLogger{DEBUG, ""}
 
+func NewLogger(level Level, prefix string) Logger {
+	return &stdoutLogger{DEBUG, prefix}
+}
+
 // SetLevel sets the logging level of the default logger.
 func SetLevel(level Level) {
 	defaultLogger.SetLevel(level)
@@ -102,22 +114,22 @@ func SetLevel(level Level) {
 
 // Debug logs the given message with DEBUG level.
 func Debug(format string, v ...interface{}) {
-	defaultLogger.Debug(format, v...)
+	defaultLogger.log(DEBUG, format, v...)
 }
 
 // Info logs the given message with INFO level.
 func Info(format string, v ...interface{}) {
-	defaultLogger.Info(format, v...)
+	defaultLogger.log(INFO, format, v...)
 }
 
 // Warn logs the given message with WARN level.
 func Warn(format string, v ...interface{}) {
-	defaultLogger.Warn(format, v...)
+	defaultLogger.log(WARN, format, v...)
 }
 
 // Error logs the given message with ERROR level.
 func Error(format string, v ...interface{}) {
-	defaultLogger.Error(format, v...)
+	defaultLogger.log(ERROR, format, v...)
 }
 
 // Fatal logs the given message with ERROR level and exits (same as
