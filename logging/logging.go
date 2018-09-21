@@ -44,6 +44,8 @@ func (l Level) String() string {
 	return levelNames[l]
 }
 
+// A Logger is used to write a string to some output using a certain log level
+// that is part of the written string.
 type Logger interface {
 	Debug(format string, v ...interface{})
 	Info(format string, v ...interface{})
@@ -103,8 +105,11 @@ func (l *stdoutLogger) SetLevel(level Level) {
 
 var defaultLogger = &stdoutLogger{DEBUG, ""}
 
+// NewLogger creates a new logging object that only logs messages above the
+// given level and swallows all others. The optional prefix is prepended to
+// each log output.
 func NewLogger(level Level, prefix string) Logger {
-	return &stdoutLogger{DEBUG, prefix}
+	return &stdoutLogger{level, prefix}
 }
 
 // SetLevel sets the logging level of the default logger.

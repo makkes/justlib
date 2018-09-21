@@ -110,7 +110,7 @@ func TestDefaultSetLevelShouldSetLevel(t *testing.T) {
 	SetLevel(ERROR)
 	Warn("Warp reactor core primary coolant failure")
 
-	a.Match("", buf.String(), "Unexpected log output")
+	a.Match("^$", buf.String(), "Unexpected log output")
 }
 
 func TestNewLogger(t *testing.T) {
@@ -132,5 +132,5 @@ func TestNewLoggerWithLevelShouldSuppressLowerLevelLogs(t *testing.T) {
 	logger := NewLogger(ERROR, "PREFIX")
 	logger.Info("What a nice day, innit?")
 
-	a.Match("", buf.String(), "Unexpected log output")
+	a.Match("^$", buf.String(), "Unexpected log output")
 }
