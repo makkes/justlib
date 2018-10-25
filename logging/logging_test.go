@@ -134,3 +134,15 @@ func TestNewLoggerWithLevelShouldSuppressLowerLevelLogs(t *testing.T) {
 
 	a.Match("^$", buf.String(), "Unexpected log output")
 }
+
+func TestNewLoggerWithDefaultLevelShouldSetCorrectLevel(t *testing.T) {
+	a := assert.NewAssert(t)
+	buf := new(bytes.Buffer)
+	log.SetOutput(buf)
+
+	SetLevel(ERROR)
+	logger := NewDefaultLevelLogger("PREFIX")
+	logger.Info("What a nice day, innit?")
+
+	a.Match("^$", buf.String(), "Unexpected log output")
+}

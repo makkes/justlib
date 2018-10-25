@@ -112,6 +112,13 @@ func NewLogger(level Level, prefix string) Logger {
 	return &stdoutLogger{level, prefix}
 }
 
+// NewDefaultLevelLogger creates a new logging object. The log level is
+// inherited from the default logger which is set via SetLevel. The optional
+// prefix is prepended to each log output.
+func NewDefaultLevelLogger(prefix string) Logger {
+	return &stdoutLogger{defaultLogger.level, prefix}
+}
+
 // SetLevel sets the logging level of the default logger.
 func SetLevel(level Level) {
 	defaultLogger.SetLevel(level)
